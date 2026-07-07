@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매물 안내</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f5f4f0;
+  --card: #ffffff;
+  --accent: #2d6a4f;
+  --accent-light: #e8f5e9;
+  --text: #1a1a1a;
+  --sub: #666;
+  --border: #e0e0e0;
+}
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── 헤더 ── */
+header {
+  background: var(--accent);
+  color: white;
+  padding: 18px 20px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+header .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+/* ── 안내 배너 ── */
+.guide-banner {
+  background: #f0f7f4;
+  border-bottom: 1px solid #c8e6c9;
+  padding: 12px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.guide-banner p {
+  font-size: 13px;
+  color: #2d6a4f;
+  line-height: 1.6;
+}
+.guide-banner p + p {
+  margin-top: 2px;
+}
+
+/* ── 리스트 뷰 ── */
+#list-view {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.section-title {
+  font-size: 13px;
+  color: var(--sub);
+  font-weight: 500;
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  gap: 0;
+}
+.card:active { transform: scale(0.98); }
+.card-thumb {
+  width: 110px;
+  min-height: 110px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ddd;
+}
+.card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+.card-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 6px;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-price {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-arrow {
+  font-size: 18px;
+  color: #ccc;
+  align-self: center;
+  padding-right: 4px;
+  flex-shrink: 0;
+}
+
+/* ── 상세 뷰 ── */
+#detail-view {
+  display: none;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+  min-height: 100vh;
+}
+.detail-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 썸네일 슬라이더 (상세 상단, 작게) ── */
+.thumb-slider-wrap {
+  position: relative;
+  width: 100%;
+  background: #111;
+  overflow: hidden;
+  height: 220px; /* 작은 높이 */
+  cursor: pointer;
+}
+.thumb-slider-wrap:after {
+  content: '🔍 탭하면 크게 볼 수 있어요';
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.thumb-slider-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.thumb-slider-track img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.thumb-slide-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.thumb-slide-btn.prev { left: 8px; }
+.thumb-slide-btn.next { right: 8px; }
+.thumb-slide-counter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+.thumb-slide-dots {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  pointer-events: none;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  transition: background 0.2s;
+}
+.dot.active { background: white; }
+
+/* ── 전체화면 라이트박스 ── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lightbox-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+#lightbox-track img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.lb-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+.lb-btn.prev { left: 12px; }
+.lb-btn.next { right: 12px; }
+.lb-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lb-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  background: rgba(0,0,0,0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* 상세 내용 */
+.detail-body { padding: 16px; }
+.detail-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.detail-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.detail-price { font-size: 17px; color: var(--accent); font-weight: 700; margin-bottom: 14px; }
+.info-block {
+  background: white;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.info-block-title {
+  font-size: 12px;
+  color: var(--sub);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: var(--sub); }
+.info-row .value { font-weight: 500; }
+.tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 4px 0;
+}
+.feature-tag {
+  font-size: 12px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.memo-box {
+  background: #fff9e6;
+  border-left: 3px solid #f4b942;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+}
+.cta-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 8px;
+  text-decoration: none;
+}
+.footer-space { height: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🏠 마스터부동산</div>
+    <div class="sub">양천국 중개사 매물 추천</div>
+  </div>
+</header>
+
+<!-- 안내 문구 배너 -->
+<div class="guide-banner" id="guideBanner">
+  <p>📋 아래 매물 카드를 탭하시면 상세 정보 및 사진을 확인하실 수 있습니다.</p>
+  <p>📸 상세 페이지에서 사진을 탭하면 크게 볼 수 있고, 좌우로 스와이프해 여러 장을 확인하실 수 있습니다.</p>
+</div>
+
+<!-- 리스트 뷰 -->
+<div id="list-view">
+  <div class="section-title">추천 매물 3건</div>
+
+  <!-- 매물 1 -->
+  <div class="card" onclick="openDetail(0)">
+    <img class="card-thumb" src="https://pllqy2.github.io/listings/room1_%20(1).jpg" alt="매물1 썸네일" onerror="this.style.display='none'">
+    <div class="card-body">
+      <div>
+        <span class="card-tag">1.5룸</span>
+        <div class="card-title">괴정동 코코하우스</div>
+        <div class="card-price">보증금 200 / 월 58만</div>
+        <div class="card-desc">관리비 3.5만 · 대리석바닥 · 시청역 도보 20분</div>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </div>
+
+  <!-- 매물 2 -->
+  <div class="card" onclick="openDetail(1)">
+    <img class="card-thumb" src="https://pllqy2.github.io/listings/room2_%20(1).jpg" alt="매물2 썸네일" onerror="this.style.display='none'">
+    <div class="card-body">
+      <div>
+        <span class="card-tag">분리형원룸</span>
+        <div class="card-title">라온하우스 탄방동 101호</div>
+        <div class="card-price">보증금 300 / 월 37만</div>
+        <div class="card-desc">풀옵션 · 즉시입주 · 시청역 도보 20분</div>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </div>
+
+  <!-- 매물 3 -->
+  <div class="card" onclick="openDetail(2)">
+    <img class="card-thumb" src="https://pllqy2.github.io/listings/room3_%20(1).jpg" alt="매물3 썸네일" onerror="this.style.display='none'">
+    <div class="card-body">
+      <div>
+        <span class="card-tag">분리형원룸</span>
+        <div class="card-title">끌림 탄방동 204호</div>
+        <div class="card-price">보증금 200 / 월 43만</div>
+        <div class="card-desc">관리비 4만 · 2018년 준공 · 엘리베이터 · 인테리어 예쁨</div>
+      </div>
+    </div>
+    <div class="card-arrow">›</div>
+  </div>
+
+</div><!-- /list-view -->
+
+<!-- 상세 뷰 -->
+<div id="detail-view">
+  <div class="detail-back" onclick="closeDetail()">← 목록으로</div>
+
+  <!-- 작은 썸네일 슬라이더 (탭하면 라이트박스) -->
+  <div class="thumb-slider-wrap" id="thumbSliderWrap" onclick="openLightbox()">
+    <div class="thumb-slider-track" id="thumbSliderTrack"></div>
+    <button class="thumb-slide-btn prev" onclick="event.stopPropagation(); thumbSlide(-1)">‹</button>
+    <button class="thumb-slide-btn next" onclick="event.stopPropagation(); thumbSlide(1)">›</button>
+    <div class="thumb-slide-counter" id="thumbSlideCounter">1 / 1</div>
+    <div class="thumb-slide-dots" id="thumbSlideDots"></div>
+  </div>
+
+  <div class="detail-body">
+    <span class="detail-tag" id="dTag"></span>
+    <div class="detail-title" id="dTitle"></div>
+    <div class="detail-price" id="dPrice"></div>
+
+    <div class="info-block">
+      <div class="info-block-title">기본 정보</div>
+      <div id="dInfoRows"></div>
+    </div>
+
+    <div class="info-block">
+      <div class="info-block-title">특징</div>
+      <div class="tags-wrap" id="dTags"></div>
+    </div>
+
+    <div class="info-block">
+      <div class="info-block-title">중개사 메모</div>
+      <div class="memo-box" id="dMemo"></div>
+    </div>
+
+    <a class="cta-btn" href="tel:010-9281-2481">📞 문의하기</a>
+    <div class="footer-space"></div>
+  </div>
+</div>
+
+<!-- 전체화면 라이트박스 -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <div id="lightbox-track"></div>
+  <button class="lb-btn prev" onclick="lbSlide(-1)">‹</button>
+  <button class="lb-btn next" onclick="lbSlide(1)">›</button>
+  <div class="lb-counter" id="lbCounter">1 / 1</div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// 매물 데이터
+// ────────────────────────────────────────────
+const listings = [
+  {
+    tag: "1.5룸",
+    title: "괴정동 코코하우스 2층 매물",
+    price: "보증금 200만 / 월세 58만",
+    info: [
+      { label: "위치", value: "대전 중구 괴정동 4-47" },
+      { label: "층수", value: "2층 매물" },
+      { label: "구조", value: "오픈형 1.5룸" },
+      { label: "관리비", value: "월 3.5만원" },
+      { label: "교통", value: "시청역 8번출구 도보 20분" },
+    ],
+    features: ["오픈형 1.5룸", "깔끔한 내부", "대리석 바닥", "시청역 도보권"],
+    memo: "오픈형 1.5룸 구조로 공간이 넓게 느껴져요. 대리석 바닥이라 인테리어가 깔끔하고, 시청역 8번출구까지 도보로 이동 가능해요.",
+    phone: "010-9281-2481",
+    photos: [
+      "https://pllqy2.github.io/listings/room1_%20(1).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(2).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(3).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(4).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(5).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(6).jpg",
+      "https://pllqy2.github.io/listings/room1_%20(7).jpg",
+    ]
+  },
+  {
+    tag: "분리형원룸",
+    title: "라온하우스 탄방동 101호",
+    price: "보증금 300만 / 월세 37만",
+    info: [
+      { label: "위치", value: "대전 서구 탄방동 910" },
+      { label: "호수", value: "101호" },
+      { label: "구조", value: "분리형 원룸" },
+      { label: "관리비", value: "별도 문의" },
+      { label: "입주", value: "즉시 가능" },
+      { label: "교통", value: "시청역 8번출구 도보 20분" },
+    ],
+    features: ["분리형 원룸", "풀옵션", "즉시입주 가능", "시청역 도보권"],
+    memo: "분리형 구조라 공간 활용이 좋아요. 풀옵션에 공실 상태라 바로 입주 가능합니다. 시청역 8번출구까지 도보로 이동 가능해요.",
+    phone: "010-9281-2481",
+    photos: [
+      "https://pllqy2.github.io/listings/room2_%20(1).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(2).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(3).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(4).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(5).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(6).jpg",
+      "https://pllqy2.github.io/listings/room2_%20(7).jpg",
+    ]
+  },
+  {
+    tag: "분리형원룸",
+    title: "끌림 탄방동 204호",
+    price: "보증금 200만 / 월세 43만",
+    info: [
+      { label: "위치", value: "대전 서구 탄방동 1148" },
+      { label: "호수", value: "204호" },
+      { label: "구조", value: "원룸 (분리형)" },
+      { label: "관리비", value: "월 4만원" },
+      { label: "준공", value: "2018년" },
+      { label: "교통", value: "시청역 8번출구 도보 20분" },
+    ],
+    features: ["분리형 원룸", "2018년 준공", "엘리베이터", "인테리어 예쁨", "시청역 도보권"],
+    memo: "2018년 준공 건물이라 내부가 깔끔하고 인테리어가 예뻐요. 엘리베이터가 있어서 편리하고, 시청역 8번출구까지 도보 20분 거리예요.",
+    phone: "010-9281-2481",
+    photos: [
+      "https://pllqy2.github.io/listings/room3_%20(1).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(2).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(3).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(4).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(5).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(6).jpg",
+      "https://pllqy2.github.io/listings/room3_%20(7).jpg",
+    ]
+  }
+];
+
+// ── 상태 ──
+let currentPhotos = [];
+let thumbIdx = 0;
+let lbIdx = 0;
+
+// ── 상세 열기 ──
+function openDetail(idx) {
+  const d = listings[idx];
+  currentPhotos = d.photos;
+  thumbIdx = 0;
+  lbIdx = 0;
+
+  document.getElementById('dTag').textContent = d.tag;
+  document.getElementById('dTitle').textContent = d.title;
+  document.getElementById('dPrice').textContent = d.price;
+
+  document.getElementById('dInfoRows').innerHTML = d.info.map(r =>
+    `<div class="info-row"><span class="label">${r.label}</span><span class="value">${r.value}</span></div>`
+  ).join('');
+
+  document.getElementById('dTags').innerHTML = d.features.map(f =>
+    `<span class="feature-tag">${f}</span>`
+  ).join('');
+
+  document.getElementById('dMemo').textContent = d.memo;
+  document.querySelector('.cta-btn').href = `tel:${d.phone}`;
+
+  // 썸네일 슬라이더 구성
+  const track = document.getElementById('thumbSliderTrack');
+  track.innerHTML = currentPhotos.map(url =>
+    `<img src="${url}" alt="매물 사진">`
+  ).join('');
+  track.style.transform = 'translateX(0)';
+
+  document.getElementById('thumbSlideCounter').textContent = `1 / ${currentPhotos.length}`;
+  document.getElementById('thumbSlideDots').innerHTML = currentPhotos.map((_, i) =>
+    `<div class="dot ${i===0?'active':''}" id="tdot-${i}"></div>`
+  ).join('');
+
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('guideBanner').style.display = 'none';
+  document.getElementById('detail-view').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('list-view').style.display = 'flex';
+  document.getElementById('guideBanner').style.display = 'block';
+}
+
+// ── 썸네일 슬라이더 ──
+function thumbSlide(dir) {
+  thumbIdx = Math.max(0, Math.min(currentPhotos.length - 1, thumbIdx + dir));
+  document.getElementById('thumbSliderTrack').style.transform = `translateX(-${thumbIdx * 100}%)`;
+  document.getElementById('thumbSlideCounter').textContent = `${thumbIdx + 1} / ${currentPhotos.length}`;
+  document.querySelectorAll('[id^="tdot-"]').forEach((d, i) =>
+    d.classList.toggle('active', i === thumbIdx)
+  );
+}
+
+// ── 라이트박스 ──
+function openLightbox() {
+  lbIdx = thumbIdx;
+  const lb = document.getElementById('lightbox');
+  const track = document.getElementById('lightbox-track');
+  track.innerHTML = currentPhotos.map(url =>
+    `<img src="${url}" alt="매물 사진" style="width:100vw;height:100vh;object-fit:contain;flex-shrink:0;">`
+  ).join('');
+  track.style.transform = `translateX(-${lbIdx * 100}vw)`;
+  track.style.width = `${currentPhotos.length * 100}vw`;
+  document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${currentPhotos.length}`;
+  lb.classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+function lbSlide(dir) {
+  lbIdx = Math.max(0, Math.min(currentPhotos.length - 1, lbIdx + dir));
+  document.getElementById('lightbox-track').style.transform = `translateX(-${lbIdx * 100}vw)`;
+  document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${currentPhotos.length}`;
+  // 썸네일도 동기화
+  thumbIdx = lbIdx;
+  document.getElementById('thumbSliderTrack').style.transform = `translateX(-${thumbIdx * 100}%)`;
+  document.getElementById('thumbSlideCounter').textContent = `${thumbIdx + 1} / ${currentPhotos.length}`;
+}
+
+// ── 터치 스와이프 (썸네일) ──
+let touchStartX = 0;
+document.getElementById('thumbSliderTrack') && document.addEventListener('touchstart', e => {
+  if (e.target.closest('.thumb-slider-wrap')) touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!e.target.closest('.thumb-slider-wrap') || e.target.closest('.thumb-slide-btn')) return;
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) thumbSlide(diff > 0 ? 1 : -1);
+});
+
+// ── 터치 스와이프 (라이트박스) ──
+let lbTouchX = 0;
+document.getElementById('lightbox').addEventListener('touchstart', e => {
+  lbTouchX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  if (e.target.closest('.lb-btn') || e.target.closest('.lb-close')) return;
+  const diff = lbTouchX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) lbSlide(diff > 0 ? 1 : -1);
+});
+
+// ESC로 라이트박스 닫기
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+</script>
+</body>
+</html>
