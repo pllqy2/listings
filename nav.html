@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>길찾기 연결 중...</title>
+</head>
+<body>
+<p style="font-family:sans-serif;text-align:center;margin-top:40px;">네이버지도로 이동 중입니다...</p>
+<script>
+  const params = new URLSearchParams(location.search);
+  const lat = params.get('lat');
+  const lng = params.get('lng');
+  const name = params.get('name') || '목적지';
+
+  if (lat && lng) {
+    const nmapUrl = `nmap://navigation?dlat=${lat}&dlng=${lng}&dname=${encodeURIComponent(name)}&appname=com.master.realestate`;
+    location.href = nmapUrl;
+
+    // 앱이 없거나 nmap:// 실행이 안 되면 1.5초 후 네이버지도 웹으로 대체 이동
+    setTimeout(() => {
+      location.href = `https://map.naver.com/v5/search/${encodeURIComponent(name)}?c=${lng},${lat},17,0,0,0,dh`;
+    }, 1500);
+  } else {
+    document.body.innerHTML = '<p style="font-family:sans-serif;text-align:center;margin-top:40px;">잘못된 링크입니다 (좌표 없음)</p>';
+  }
+</script>
+</body>
+</html>
