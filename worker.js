@@ -71,7 +71,12 @@ async function handleApi(request, env, code) {
     const ALLOWED = ["tag", "title", "price", "desc", "info", "features", "memo", "phone", "agency", "agent", "photos"];
     const clean = {};
     for (const k of ALLOWED) if (k in body) clean[k] = body[k];
-    await env.LISTING_DATA.put(code, JSON.stringify(clean));
+    // 통째로 덮어쓰지 않고 기존 값과 병합 — 브라우저에 캐시된 옛날 편집폼(필드가 덜 있는
+    // 버전)으로 저장해도 그 폼에 없던 필드(예: 나중에 추가된 photos)가 사라지지 않게 한다
+    // (실측 확인, 2026-08-27 — 사진목록이 이 방식 때문에 한 번 지워졌었음).
+    const existingRaw = await env.LISTING_DATA.get(code);
+    const merged = existingRaw ? { ...JSON.parse(existingRaw), ...clean } : clean;
+    await env.LISTING_DATA.put(code, JSON.stringify(merged));
     return new Response(JSON.stringify({ ok: true }), {
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
