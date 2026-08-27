@@ -180,7 +180,13 @@ function renderEditPage(code, data, key) {
   .addBtn{background:#eef2ff;color:#3730a3;border:none;border-radius:6px;padding:8px 12px;
           font-size:13px;cursor:pointer;margin-top:4px}
   .photoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden}
+  .photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;
+         touch-action:none;cursor:grab}
+  .photo.dragging{opacity:.35}
+  .photo-placeholder{border-radius:8px;background:#e5e7eb;border:2px dashed #b8c0cc;aspect-ratio:1}
+  .photo-ghost{position:fixed;z-index:1000;border-radius:8px;overflow:hidden;
+               box-shadow:0 8px 24px rgba(0,0,0,.35);pointer-events:none;transform:scale(1.05)}
+  .photo-ghost img{width:100%;height:100%;object-fit:cover;display:block}
   .photo img{width:100%;height:100%;object-fit:cover;display:block}
   .photo .pnum{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;
                font-size:11px;padding:1px 6px;border-radius:10px}
@@ -202,7 +208,7 @@ function renderEditPage(code, data, key) {
   <div class="hint">저장하면 사이트에 바로 반영됩니다.</div>
 
   <div class="card">
-    <label>사진 (◀▶로 순서 변경, ✕로 목록에서 제외 — 실제 파일은 지워지지 않습니다)</label>
+    <label>사진 (드래그로 순서 변경 — PC·스마트폰 모두 가능, ✕로 목록에서 제외 — 실제 파일은 지워지지 않습니다)</label>
     <div class="photoGrid" id="photoGrid">${photoTiles}</div>
   </div>
 
@@ -241,8 +247,11 @@ function renderEditPage(code, data, key) {
 </div>
 
 <script>
-// ── 사진 그리드: ◀▶ 버튼으로 순서 변경 (네이티브 드래그앤드롭은 터치/모바일에서
-// 동작 안 해서 — 실측 확인, 2026-08-27 — 어디서나 확실히 되는 버튼 방식으로 교체) ──
+// ── 사진 그리드: 순서 변경 ──
+// 1) 드래그(Pointer Events — 마우스/터치/펜을 하나의 API로 통일해서 PC든 스마트폰이든
+//    동일한 코드로 동작함. 예전에 쓰던 HTML5 네이티브 드래그앤드롭은 터치에서 아예
+//    동작 안 해서 — 실측 확인, 2026-08-27 — 이걸로 교체함)
+// 2) ◀▶ 버튼(드래그가 불편한 경우를 위한 보조 수단, 그대로 유지)
 function renumberPhotos() {
   document.querySelectorAll('#photoGrid .photo').forEach((t, i) => {
     const n = t.querySelector('.pnum');
@@ -261,6 +270,68 @@ function removePhoto(btn) {
   btn.closest('.photo').remove();
   renumberPhotos();
 }
+
+(function initPhotoDrag() {
+  const grid = document.getElementById('photoGrid');
+  let dragTile = null, ghost = null, placeholder = null, pointerId = null, offsetX = 0, offsetY = 0;
+
+  grid.addEventListener('pointerdown', e => {
+    if (e.target.closest('.pdel') || e.target.closest('.pmove')) return;
+    const tile = e.target.closest('.photo');
+    if (!tile) return;
+    e.preventDefault();
+    pointerId = e.pointerId;
+    dragTile = tile;
+    const rect = tile.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    ghost = document.createElement('div');
+    ghost.className = 'photo-ghost';
+    ghost.style.width = rect.width + 'px';
+    ghost.style.height = rect.height + 'px';
+    ghost.style.left = rect.left + 'px';
+    ghost.style.top = rect.top + 'px';
+    ghost.innerHTML = tile.querySelector('img').outerHTML;
+    document.body.appendChild(ghost);
+
+    placeholder = document.createElement('div');
+    placeholder.className = 'photo-placeholder';
+    tile.after(placeholder);
+    tile.classList.add('dragging');
+    tile.style.display = 'none';
+
+    grid.setPointerCapture(pointerId);
+  });
+
+  grid.addEventListener('pointermove', e => {
+    if (!dragTile || e.pointerId !== pointerId) return;
+    ghost.style.left = (e.clientX - offsetX) + 'px';
+    ghost.style.top = (e.clientY - offsetY) + 'px';
+
+    ghost.style.display = 'none';
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    ghost.style.display = '';
+    const targetTile = under && under.closest('.photo');
+    if (targetTile && targetTile !== dragTile && grid.contains(targetTile)) {
+      const rect = targetTile.getBoundingClientRect();
+      if (e.clientX < rect.left + rect.width / 2) targetTile.before(placeholder);
+      else targetTile.after(placeholder);
+    }
+  });
+
+  function endDrag() {
+    if (!dragTile) return;
+    placeholder.replaceWith(dragTile);
+    dragTile.style.display = '';
+    dragTile.classList.remove('dragging');
+    ghost.remove();
+    dragTile = null; ghost = null; placeholder = null; pointerId = null;
+    renumberPhotos();
+  }
+  grid.addEventListener('pointerup', endDrag);
+  grid.addEventListener('pointercancel', endDrag);
+})();
 
 function addInfoRow() {
   const div = document.createElement('div');
