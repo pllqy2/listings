@@ -148,7 +148,7 @@ function renderEditPage(code, data, key) {
   const photoBase = `https://pllqy2.github.io/listings/${code}`;
   const photoTiles = photos.map((fn, i) => `
     <div class="photo" data-fn="${esc(fn)}">
-      <img src="${photoBase}/${esc(fn)}" loading="lazy">
+      <img src="${photoBase}/${esc(fn)}" loading="lazy" draggable="false">
       <span class="pnum">${i + 1}</span>
       <button type="button" class="pdel" onclick="removePhoto(this)">✕</button>
       <div class="pmove">
@@ -181,13 +181,14 @@ function renderEditPage(code, data, key) {
           font-size:13px;cursor:pointer;margin-top:4px}
   .photoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;
-         touch-action:none;cursor:grab}
+         touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
   .photo.dragging{opacity:.35}
   .photo-placeholder{border-radius:8px;background:#e5e7eb;border:2px dashed #b8c0cc;aspect-ratio:1}
   .photo-ghost{position:fixed;z-index:1000;border-radius:8px;overflow:hidden;
                box-shadow:0 8px 24px rgba(0,0,0,.35);pointer-events:none;transform:scale(1.05)}
   .photo-ghost img{width:100%;height:100%;object-fit:cover;display:block}
-  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo img{width:100%;height:100%;object-fit:cover;display:block;
+             -webkit-user-drag:none;user-drag:none;pointer-events:none}
   .photo .pnum{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;
                font-size:11px;padding:1px 6px;border-radius:10px}
   .photo .pdel{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.9);color:#fff;
