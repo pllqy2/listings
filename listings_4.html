@@ -1,0 +1,752 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매물 안내</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f5f4f0;
+  --card: #ffffff;
+  --accent: #2d6a4f;
+  --accent-light: #e8f5e9;
+  --text: #1a1a1a;
+  --sub: #666;
+  --border: #e0e0e0;
+}
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── 헤더 ── */
+header {
+  background: var(--accent);
+  color: white;
+  padding: 18px 20px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+header .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+/* ── 안내 배너 ── */
+.guide-banner {
+  background: #fff0e6;
+  border-bottom: 1px solid #f5c9a8;
+  padding: 12px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.guide-banner p {
+  font-size: 13px;
+  color: #1a1a1a;
+  line-height: 1.6;
+}
+.guide-banner p + p {
+  margin-top: 2px;
+}
+
+/* ── 리스트 뷰 ── */
+#list-view {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.section-title {
+  font-size: 13px;
+  color: var(--sub);
+  font-weight: 500;
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  gap: 0;
+}
+.card:active { transform: scale(0.98); }
+.card-thumb {
+  width: 110px;
+  min-height: 110px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #ddd;
+}
+.card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+.card-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 6px;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-price {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.card-desc {
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-arrow {
+  font-size: 18px;
+  color: #ccc;
+  align-self: center;
+  padding-right: 4px;
+  flex-shrink: 0;
+}
+
+/* ── 상세 뷰 ── */
+#detail-view {
+  display: none;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+  min-height: 100vh;
+}
+.detail-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+  cursor: pointer;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 썸네일 슬라이더 (상세 상단, 작게) ── */
+.thumb-slider-wrap {
+  position: relative;
+  width: 100%;
+  background: #111;
+  overflow: hidden;
+  height: 220px; /* 작은 높이 */
+  cursor: pointer;
+}
+.thumb-slider-wrap:after {
+  content: '🔍 탭하면 크게 볼 수 있어요';
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.thumb-slide-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.thumb-slide-btn.prev { left: 8px; }
+.thumb-slide-btn.next { right: 8px; }
+.thumb-slide-counter {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+.thumb-slide-dots {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  pointer-events: none;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  transition: background 0.2s;
+}
+.dot.active { background: white; }
+
+/* ── 전체화면 라이트박스 ── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#lightbox.open { display: flex; }
+#lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  /* 슬라이드 전환 애니메이션 */
+  transition: opacity 0.2s ease;
+}
+.lb-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+.lb-btn.prev { left: 12px; }
+.lb-btn.next { right: 12px; }
+.lb-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lb-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  background: rgba(0,0,0,0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* 상세 내용 */
+.detail-body { padding: 16px; }
+.detail-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.detail-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.detail-price { font-size: 17px; color: var(--accent); font-weight: 700; margin-bottom: 14px; }
+.info-block {
+  background: white;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.info-block-title {
+  font-size: 12px;
+  color: var(--sub);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: var(--sub); }
+.info-row .value { font-weight: 500; }
+.tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 4px 0;
+}
+.feature-tag {
+  font-size: 12px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.memo-box {
+  background: #fff9e6;
+  border-left: 3px solid #f4b942;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+}
+.cta-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 8px;
+  text-decoration: none;
+}
+.footer-space { height: 30px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🏠 마스터부동산</div>
+    <div class="sub">양천국 공인중개사 매물 추천</div>
+  </div>
+</header>
+
+<!-- 안내 문구 배너 -->
+<div class="guide-banner" id="guideBanner">
+  <p>📋 아래 매물 카드를 누르시면 상세 정보 및 사진을 확인하실 수 있습니다.</p>
+  <p>📸 상세 페이지에서 사진을 누르면 크게 볼 수 있고, 좌우로 넘기시면 여러 장을 확인하실 수 있습니다.</p>
+  <p>💬 문의 사항 있으시면 편하게 연락주세요.</p>
+</div>
+
+<!-- LISTINGS_START -->
+<div id="list-view">
+  <div class="section-title">추천 매물 4건</div>
+
+  <!-- S01 대동 4층 매물 -->
+  <div class="card" onclick="openDetail(0)">
+    <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S01/S01_01.jpg" alt="대동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
+    <div class="card-body"><div>
+      <span class="card-tag">쓰리룸</span>
+      <div class="card-title">대동 4층 매물</div>
+      <div class="card-price">보증금 2000 / 월 60만</div>
+      <div class="card-desc">관리비 0만원 · 쓰리룸 · 총 4층</div>
+    </div></div>
+    <div class="card-arrow">›</div>
+  </div>
+
+  <!-- S02 용두동 2층 매물 -->
+  <div class="card" onclick="openDetail(1)">
+    <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S02/S02_01.jpg" alt="용두동 2층 매물 썸네일" onerror="this.style.background='#ddd'">
+    <div class="card-body"><div>
+      <span class="card-tag">투룸</span>
+      <div class="card-title">용두동 2층 매물</div>
+      <div class="card-price">보증금 2000 / 월 60만</div>
+      <div class="card-desc">관리비 5만원 · 투룸 · 총 4층</div>
+    </div></div>
+    <div class="card-arrow">›</div>
+  </div>
+
+  <!-- S03 용두동 5층 매물 -->
+  <div class="card" onclick="openDetail(2)">
+    <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S03/S03_01.jpg" alt="용두동 5층 매물 썸네일" onerror="this.style.background='#ddd'">
+    <div class="card-body"><div>
+      <span class="card-tag">투룸</span>
+      <div class="card-title">용두동 5층 매물</div>
+      <div class="card-price">보증금 1000 / 월 75만</div>
+      <div class="card-desc">관리비 5.2만원 · 투룸 · 총 5층</div>
+    </div></div>
+    <div class="card-arrow">›</div>
+  </div>
+
+  <!-- S04 용문동 3층 매물 -->
+  <div class="card" onclick="openDetail(3)">
+    <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S04/S04_01.jpg" alt="용문동 3층 매물 썸네일" onerror="this.style.background='#ddd'">
+    <div class="card-body"><div>
+      <span class="card-tag">투룸</span>
+      <div class="card-title">용문동 3층 매물</div>
+      <div class="card-price">보증금 2000 / 월 70만</div>
+      <div class="card-desc">관리비 6만원 · 투룸 · 총 4층</div>
+    </div></div>
+    <div class="card-arrow">›</div>
+  </div>
+
+</div>
+<!-- LISTINGS_END -->
+
+<!-- 상세 뷰 -->
+<div id="detail-view">
+  <div class="detail-back" onclick="closeDetail()">← 목록으로</div>
+
+  <!-- 작은 썸네일 슬라이더 (누르면 라이트박스) -->
+  <div class="thumb-slider-wrap" id="thumbSliderWrap" onclick="openLightbox()">
+    <img id="thumbImg" src="" alt="매물 사진"
+      style="width:100%;height:220px;object-fit:contain;display:block;background:#111;"
+      onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.src.replace('%20','%2520');}">
+    <button class="thumb-slide-btn prev" onclick="event.stopPropagation(); thumbSlide(-1)">‹</button>
+    <button class="thumb-slide-btn next" onclick="event.stopPropagation(); thumbSlide(1)">›</button>
+    <div class="thumb-slide-counter" id="thumbSlideCounter">1 / 1</div>
+    <div class="thumb-slide-dots" id="thumbSlideDots"></div>
+  </div>
+
+  <div class="detail-body">
+    <span class="detail-tag" id="dTag"></span>
+    <div class="detail-title" id="dTitle"></div>
+    <div class="detail-price" id="dPrice"></div>
+
+    <div class="info-block">
+      <div class="info-block-title">기본 정보</div>
+      <div id="dInfoRows"></div>
+    </div>
+
+    <div class="info-block">
+      <div class="info-block-title">특징</div>
+      <div class="tags-wrap" id="dTags"></div>
+    </div>
+
+    <div class="info-block">
+      <div class="info-block-title">중개사 메모</div>
+      <div class="memo-box" id="dMemo"></div>
+    </div>
+
+    <a class="cta-btn" href="tel:010-9281-2481">📞 문의하기</a>
+    <div class="footer-space"></div>
+  </div>
+</div>
+
+<!-- 전체화면 라이트박스 -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="매물 사진 전체화면">
+  <button class="lb-btn prev" onclick="lbSlide(-1)">‹</button>
+  <button class="lb-btn next" onclick="lbSlide(1)">›</button>
+  <div class="lb-counter" id="lbCounter">1 / 1</div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// 매물 데이터
+// ────────────────────────────────────────────
+function makePhotos(prefix, count, newStyle = false) {
+  // newStyle: S09_01.jpg 형식 / 기존: S01_ (1).jpg 형식
+  return Array.from({length: count}, (_, i) => {
+    const filename = newStyle
+      ? `${prefix}_${String(i+1).padStart(2,'0')}.jpg`
+      : `${prefix}_%20(${i+1}).jpg`;
+    return `https://pllqy2.github.io/listings/${prefix}/${filename}`;
+  });
+}
+
+const listings = [
+  {
+    tag: "쓰리룸",
+    title: "대동 4층 매물",
+    price: "보증금 2000만 / 월세 60만",
+    info: [
+      { label: "건물명", value: "신동아빌라" },
+      { label: "주소", value: "대전 동구 대동 354-1" },
+      { label: "호수", value: "401호" },
+      { label: "구조", value: "쓰리룸" },
+      { label: "층수", value: "4층 / 총 4층 건물" },
+      { label: "엘리베이터", value: "없음" },
+      { label: "주차", value: "4대" },
+      { label: "생활시설", value: "냉장고, 옷장, 신발장, 싱크대, 가스레인지, 붙박이장, 현관보안" },
+      { label: "보안", value: "현관보안, 인터폰" },
+      { label: "기타", value: "베란다" },
+      { label: "관리비", value: "0만원" },
+      { label: "입주", value: "즉시입주" },
+    ],
+    features: ["쓰리룸", "베란다", "가스레인지", "에어컨", "현관보안", "넓은 원룸"],
+    memo: "전유면적(㎡): 66.06",
+    phone: "010-9281-2481",
+    agency: "마스터부동산",
+    agent: "",
+    photos: makePhotos("S01", 20, true)
+  },
+  {
+    tag: "투룸",
+    title: "용두동 2층 매물",
+    price: "보증금 2000만 / 월세 60만",
+    info: [
+      { label: "건물명", value: "한양빌" },
+      { label: "주소", value: "대전 중구 용두동 132-11" },
+      { label: "호수", value: "205호" },
+      { label: "구조", value: "투룸" },
+      { label: "층수", value: "2층 / 총 4층 건물" },
+      { label: "엘리베이터", value: "있음" },
+      { label: "주차", value: "9대" },
+      { label: "생활시설", value: "냉장고, 신발장, 싱크대, 가스레인지, 붙박이장, 현관보안" },
+      { label: "보안", value: "현관보안" },
+      { label: "기타", value: "베란다" },
+      { label: "관리비", value: "5만원" },
+      { label: "입주", value: "즉시입주" },
+    ],
+    features: ["투룸", "베란다", "가스레인지", "에어컨", "현관보안", "넓은 원룸"],
+    memo: "전유면적(㎡):",
+    phone: "010-9281-2481",
+    agency: "마스터부동산",
+    agent: "",
+    photos: makePhotos("S02", 17, true)
+  },
+  {
+    tag: "투룸",
+    title: "용두동 5층 매물",
+    price: "보증금 1000만 / 월세 75만",
+    info: [
+      { label: "건물명", value: "한신하우스" },
+      { label: "주소", value: "대전 중구 용두동 19-1" },
+      { label: "호수", value: "501호" },
+      { label: "구조", value: "투룸" },
+      { label: "층수", value: "5층 / 총 5층 건물" },
+      { label: "엘리베이터", value: "있음" },
+      { label: "주차", value: "8대" },
+      { label: "생활시설", value: "싱크대, 붙박이장" },
+      { label: "보안", value: "현관보안" },
+      { label: "기타", value: "베란다" },
+      { label: "관리비", value: "5.2만원" },
+      { label: "입주", value: "즉시입주" },
+    ],
+    features: ["투룸", "베란다", "에어컨", "현관보안", "넓은 원룸"],
+    memo: "전유면적(㎡):",
+    phone: "010-9281-2481",
+    agency: "마스터부동산",
+    agent: "",
+    photos: makePhotos("S03", 20, true)
+  },
+  {
+    tag: "투룸",
+    title: "용문동 3층 매물",
+    price: "보증금 2000만 / 월세 70만",
+    info: [
+      { label: "건물명", value: "메이저시티" },
+      { label: "주소", value: "대전 서구 용문동 260-38" },
+      { label: "호수", value: "302호" },
+      { label: "구조", value: "투룸" },
+      { label: "층수", value: "3층 / 총 4층 건물" },
+      { label: "엘리베이터", value: "있음" },
+      { label: "주차", value: "8대" },
+      { label: "생활시설", value: "냉장고, 세탁기, 싱크대, 가스레인지, 전자레인지, 붙박이장, 신발장, 현관보안" },
+      { label: "보안", value: "현관보안, 인터폰" },
+      { label: "기타", value: "베란다" },
+      { label: "관리비", value: "6만원" },
+      { label: "입주", value: "즉시입주" },
+    ],
+    features: ["투룸", "베란다", "가스레인지", "에어컨", "현관보안", "넓은 원룸"],
+    memo: "전유면적(㎡):",
+    phone: "010-9281-2481",
+    agency: "마스터부동산",
+    agent: "",
+    photos: makePhotos("S04", 20, true)
+  }
+];
+
+// ── 상태 ──
+let currentPhotos = [];
+let thumbIdx = 0;
+let lbIdx = 0;
+
+// ── 상세 열기 ──
+function openDetail(idx) {
+  const d = listings[idx];
+  currentPhotos = d.photos;
+  thumbIdx = 0;
+  lbIdx = 0;
+
+  document.getElementById('dTag').textContent = d.tag;
+  document.getElementById('dTitle').textContent = d.title;
+  document.getElementById('dPrice').textContent = d.price;
+
+  document.getElementById('dInfoRows').innerHTML = d.info.map(r =>
+    `<div class="info-row"><span class="label">${r.label}</span><span class="value">${r.value}</span></div>`
+  ).join('');
+
+  document.getElementById('dTags').innerHTML = d.features.map(f =>
+    `<span class="feature-tag">${f}</span>`
+  ).join('');
+
+  document.getElementById('dMemo').textContent = d.memo;
+  document.querySelector('.cta-btn').href = `tel:${d.phone}`;
+
+  // 썸네일 - 단일 img 교체 방식 (track 없음)
+  const thumbImg = document.getElementById('thumbImg');
+  thumbImg.src = currentPhotos[0];
+  thumbImg.style.opacity = '1';
+
+  document.getElementById('thumbSlideCounter').textContent = `1 / ${currentPhotos.length}`;
+  document.getElementById('thumbSlideDots').innerHTML = currentPhotos.map((_, i) =>
+    `<div class="dot ${i===0?'active':''}" id="tdot-${i}"></div>`
+  ).join('');
+
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('guideBanner').style.display = 'none';
+  document.getElementById('detail-view').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('list-view').style.display = 'flex';
+  document.getElementById('guideBanner').style.display = 'block';
+}
+
+// ── 썸네일 슬라이더 (단일 img 교체 + 페이드 + 무한루프) ──
+function thumbSlide(dir) {
+  const n = currentPhotos.length;
+  thumbIdx = (thumbIdx + dir + n) % n; // 무한루프
+  const img = document.getElementById('thumbImg');
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = currentPhotos[thumbIdx];
+    img.style.opacity = '1';
+  }, 150);
+  document.getElementById('thumbSlideCounter').textContent = `${thumbIdx + 1} / ${currentPhotos.length}`;
+  document.querySelectorAll('[id^="tdot-"]').forEach((d, i) =>
+    d.classList.toggle('active', i === thumbIdx)
+  );
+}
+
+// ── 라이트박스 (단일 img 교체 방식 + 무한루프) ──
+function openLightbox() {
+  lbIdx = thumbIdx;
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  img.src = currentPhotos[lbIdx];
+  document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${currentPhotos.length}`;
+  lb.classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+function lbSlide(dir) {
+  const img = document.getElementById('lightbox-img');
+  const n = currentPhotos.length;
+  // 무한루프: 끝에서 처음으로, 처음에서 끝으로
+  lbIdx = (lbIdx + dir + n) % n;
+  // 페이드 전환
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = currentPhotos[lbIdx];
+    img.style.opacity = '1';
+  }, 150);
+  document.getElementById('lbCounter').textContent = `${lbIdx + 1} / ${currentPhotos.length}`;
+  // 썸네일도 동기화
+  thumbIdx = lbIdx;
+  const tImg = document.getElementById('thumbImg');
+  tImg.style.opacity = '0';
+  setTimeout(() => { tImg.src = currentPhotos[thumbIdx]; tImg.style.opacity = '1'; }, 150);
+  document.getElementById('thumbSlideCounter').textContent = `${thumbIdx + 1} / ${currentPhotos.length}`;
+  document.querySelectorAll('[id^="tdot-"]').forEach((d, i) =>
+    d.classList.toggle('active', i === thumbIdx)
+  );
+}
+
+// ── 터치 스와이프 (썸네일) ──
+let touchStartX = 0;
+document.addEventListener('touchstart', e => {
+  if (e.target.closest('.thumb-slider-wrap')) touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!e.target.closest('.thumb-slider-wrap') || e.target.closest('.thumb-slide-btn')) return;
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) thumbSlide(diff > 0 ? 1 : -1);
+});
+
+// ── 터치 스와이프 (라이트박스) ──
+let lbTouchX = 0;
+document.getElementById('lightbox').addEventListener('touchstart', e => {
+  lbTouchX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  if (e.target.closest('.lb-btn') || e.target.closest('.lb-close')) return;
+  const diff = lbTouchX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 40) lbSlide(diff > 0 ? 1 : -1);
+});
+
+// ESC로 라이트박스 닫기
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+</script>
+</body>
+</html>
+
+
+
+
