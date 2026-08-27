@@ -147,10 +147,14 @@ function renderEditPage(code, data, key) {
     </div>`).join("");
   const photoBase = `https://pllqy2.github.io/listings/${code}`;
   const photoTiles = photos.map((fn, i) => `
-    <div class="photo" draggable="true" data-fn="${esc(fn)}">
+    <div class="photo" data-fn="${esc(fn)}">
       <img src="${photoBase}/${esc(fn)}" loading="lazy">
       <span class="pnum">${i + 1}</span>
-      <button type="button" class="pdel" onclick="this.parentElement.remove()">✕</button>
+      <button type="button" class="pdel" onclick="removePhoto(this)">✕</button>
+      <div class="pmove">
+        <button type="button" onclick="movePhoto(this, -1)">◀</button>
+        <button type="button" onclick="movePhoto(this, 1)">▶</button>
+      </div>
     </div>`).join("");
 
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
@@ -176,15 +180,15 @@ function renderEditPage(code, data, key) {
   .addBtn{background:#eef2ff;color:#3730a3;border:none;border-radius:6px;padding:8px 12px;
           font-size:13px;cursor:pointer;margin-top:4px}
   .photoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:grab;
-         border:2px solid transparent}
-  .photo.dragging{opacity:.4}
-  .photo.dragover{border-color:#2563eb}
-  .photo img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+  .photo{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden}
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
   .photo .pnum{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;
                font-size:11px;padding:1px 6px;border-radius:10px}
   .photo .pdel{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.9);color:#fff;
                border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer}
+  .photo .pmove{position:absolute;bottom:4px;left:4px;right:4px;display:flex;justify-content:space-between}
+  .photo .pmove button{background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:6px;
+               width:28px;height:24px;font-size:13px;cursor:pointer}
   .save{position:sticky;bottom:16px;width:100%;padding:14px;background:#2563eb;color:#fff;
         border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;
         box-shadow:0 4px 14px rgba(37,99,235,.35)}
@@ -198,7 +202,7 @@ function renderEditPage(code, data, key) {
   <div class="hint">저장하면 사이트에 바로 반영됩니다.</div>
 
   <div class="card">
-    <label>사진 (드래그로 순서 변경, ✕로 목록에서 제외 — 실제 파일은 지워지지 않습니다)</label>
+    <label>사진 (◀▶로 순서 변경, ✕로 목록에서 제외 — 실제 파일은 지워지지 않습니다)</label>
     <div class="photoGrid" id="photoGrid">${photoTiles}</div>
   </div>
 
@@ -237,46 +241,26 @@ function renderEditPage(code, data, key) {
 </div>
 
 <script>
-// ── 사진 그리드: 드래그로 순서 변경 ──
-(function initPhotoDrag() {
-  const grid = document.getElementById('photoGrid');
-  let dragEl = null;
-  grid.addEventListener('dragstart', e => {
-    const tile = e.target.closest('.photo');
-    if (!tile) return;
-    dragEl = tile;
-    tile.classList.add('dragging');
+// ── 사진 그리드: ◀▶ 버튼으로 순서 변경 (네이티브 드래그앤드롭은 터치/모바일에서
+// 동작 안 해서 — 실측 확인, 2026-08-27 — 어디서나 확실히 되는 버튼 방식으로 교체) ──
+function renumberPhotos() {
+  document.querySelectorAll('#photoGrid .photo').forEach((t, i) => {
+    const n = t.querySelector('.pnum');
+    if (n) n.textContent = i + 1;
   });
-  grid.addEventListener('dragend', () => {
-    if (dragEl) dragEl.classList.remove('dragging');
-    grid.querySelectorAll('.photo').forEach(t => t.classList.remove('dragover'));
-    dragEl = null;
-    renumber();
-  });
-  grid.addEventListener('dragover', e => {
-    e.preventDefault();
-    const tile = e.target.closest('.photo');
-    if (!tile || tile === dragEl) return;
-    grid.querySelectorAll('.photo').forEach(t => t.classList.remove('dragover'));
-    tile.classList.add('dragover');
-  });
-  grid.addEventListener('drop', e => {
-    e.preventDefault();
-    const tile = e.target.closest('.photo');
-    if (!tile || !dragEl || tile === dragEl) return;
-    const tiles = Array.from(grid.children);
-    const from = tiles.indexOf(dragEl);
-    const to = tiles.indexOf(tile);
-    if (from < to) tile.after(dragEl); else tile.before(dragEl);
-    renumber();
-  });
-  function renumber() {
-    grid.querySelectorAll('.photo').forEach((t, i) => {
-      const n = t.querySelector('.pnum');
-      if (n) n.textContent = i + 1;
-    });
-  }
-})();
+}
+function movePhoto(btn, dir) {
+  const tile = btn.closest('.photo');
+  const sibling = dir < 0 ? tile.previousElementSibling : tile.nextElementSibling;
+  if (!sibling) return;
+  if (dir < 0) tile.parentElement.insertBefore(tile, sibling);
+  else tile.parentElement.insertBefore(sibling, tile);
+  renumberPhotos();
+}
+function removePhoto(btn) {
+  btn.closest('.photo').remove();
+  renumberPhotos();
+}
 
 function addInfoRow() {
   const div = document.createElement('div');
