@@ -375,6 +375,23 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   margin-top: 8px;
   text-decoration: none;
 }
+.back-btn-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px;
+  background: white;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 24px;
+}
 .footer-space { height: 30px; }
 </style>
 </head>
@@ -484,6 +501,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
       <div class="memo-box" id="dMemo"></div>
     </div>
 
+    <button type="button" class="back-btn-bottom" onclick="closeDetail()">← 목록으로 돌아가기</button>
     <a class="cta-btn" href="tel:010-9281-2481">📞 문의하기</a>
     <div class="footer-space"></div>
   </div>
