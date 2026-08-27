@@ -73,6 +73,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   margin-bottom: 4px;
 }
 .card {
+  position: relative;
   background: var(--card);
   border-radius: 14px;
   overflow: hidden;
@@ -81,6 +82,22 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   transition: transform 0.15s, box-shadow 0.15s;
   display: flex;
   gap: 0;
+}
+.card-edit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.9);
+  border-radius: 50%;
+  font-size: 13px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  z-index: 2;
+  text-decoration: none;
 }
 .card:active { transform: scale(0.98); }
 .card-thumb {
@@ -147,17 +164,27 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   background: var(--bg);
   min-height: 100vh;
 }
+.detail-back-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
 .detail-back {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 16px;
   font-size: 14px;
   font-weight: 500;
   color: var(--accent);
   cursor: pointer;
-  background: white;
-  border-bottom: 1px solid var(--border);
+}
+.detail-edit-link {
+  font-size: 18px;
+  text-decoration: none;
+  padding: 4px;
 }
 
 /* ── 썸네일 슬라이더 (상세 상단, 작게) ── */
@@ -417,6 +444,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 
   <!-- S01 대동 4층 매물 -->
   <div class="card" data-scode="S01" onclick="openDetail(0)">
+    <a class="card-edit" href="/edit/S01" target="_blank" onclick="event.stopPropagation()" title="S01 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S01/S01_01.jpg" alt="대동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">쓰리룸</span>
@@ -429,6 +457,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 
   <!-- S02 용두동 2층 매물 -->
   <div class="card" data-scode="S02" onclick="openDetail(1)">
+    <a class="card-edit" href="/edit/S02" target="_blank" onclick="event.stopPropagation()" title="S02 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S02/S02_01.jpg" alt="용두동 2층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -441,6 +470,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 
   <!-- S03 용두동 5층 매물 -->
   <div class="card" data-scode="S03" onclick="openDetail(2)">
+    <a class="card-edit" href="/edit/S03" target="_blank" onclick="event.stopPropagation()" title="S03 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S03/S03_01.jpg" alt="용두동 5층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -453,6 +483,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 
   <!-- S04 용문동 3층 매물 -->
   <div class="card" data-scode="S04" onclick="openDetail(3)">
+    <a class="card-edit" href="/edit/S04" target="_blank" onclick="event.stopPropagation()" title="S04 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S04/S04_01.jpg" alt="용문동 3층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -468,7 +499,10 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
 
 <!-- 상세 뷰 -->
 <div id="detail-view">
-  <div class="detail-back" onclick="closeDetail()">← 목록으로</div>
+  <div class="detail-back-row">
+    <div class="detail-back" onclick="closeDetail()">← 목록으로</div>
+    <a class="detail-edit-link" id="dEditLink" href="#" target="_blank" title="이 매물 수정">✏️</a>
+  </div>
 
   <!-- 작은 썸네일 슬라이더 (누르면 라이트박스) -->
   <div class="thumb-slider-wrap" id="thumbSliderWrap" onclick="openLightbox()">
@@ -652,6 +686,9 @@ function openDetail(idx) {
   currentPhotos = d.photos;
   thumbIdx = 0;
   lbIdx = 0;
+
+  const editLink = document.getElementById('dEditLink');
+  if (editLink && d.sCode) editLink.href = '/edit/' + d.sCode;
 
   document.getElementById('dTag').textContent = d.tag;
   document.getElementById('dTitle').textContent = d.title;

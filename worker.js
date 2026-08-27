@@ -84,9 +84,19 @@ async function handleApi(request, env, code) {
   return new Response("Method Not Allowed", { status: 405 });
 }
 
+function getCookie(request, name) {
+  const header = request.headers.get("Cookie") || "";
+  const match = header.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function handleEdit(request, env, code) {
   const url = new URL(request.url);
-  const key = url.searchParams.get("key") || "";
+  // URL의 ?key= 가 있으면 그걸 우선 쓰고, 없으면 이 기기에 저장된 쿠키를 본다 —
+  // 한 번 비밀번호를 맞히면 그 기기에서는 다시 안 물어보게(2026-08-27, 사용자 요청:
+  // "비밀번호 넣기 어렵다" → URL 매번 안 치고 사이트 안 연필 아이콘으로 바로 들어오게).
+  const keyFromUrl = url.searchParams.get("key");
+  const key = keyFromUrl || getCookie(request, "edit_key") || "";
 
   if (!env.EDIT_PASSWORD || key !== env.EDIT_PASSWORD) {
     return new Response(renderLoginPage(code, request.method === "POST"), {
@@ -103,9 +113,13 @@ async function handleEdit(request, env, code) {
     });
   }
   const data = JSON.parse(raw);
-  return new Response(renderEditPage(code, data, key), {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+  const headers = { "Content-Type": "text/html; charset=utf-8" };
+  // URL로 직접 들어온 키가 맞았으면, 이 기기에 90일간 기억해서 다음부턴 URL에 키 없이도
+  // (사이트의 연필 아이콘 링크만으로) 들어올 수 있게 쿠키를 심는다.
+  if (keyFromUrl && keyFromUrl === env.EDIT_PASSWORD) {
+    headers["Set-Cookie"] = `edit_key=${encodeURIComponent(keyFromUrl)}; Path=/; Max-Age=7776000; SameSite=Lax`;
+  }
+  return new Response(renderEditPage(code, data, key), { headers });
 }
 
 function renderLoginPage(code, wrongPw) {
