@@ -399,19 +399,19 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   <div class="section-title">추천 매물 4건</div>
 
   <!-- S01 대동 4층 매물 -->
-  <div class="card" onclick="openDetail(0)">
+  <div class="card" data-scode="S01" onclick="openDetail(0)">
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S01/S01_01.jpg" alt="대동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">쓰리룸</span>
       <div class="card-title">대동 4층 매물</div>
       <div class="card-price">보증금 2000 / 월 60만</div>
-      <div class="card-desc">관리비 0만원 · 쓰리룸 · 총 4층</div>
+      <div class="card-desc">관리비 없음 · 쓰리룸 · 총 4층</div>
     </div></div>
     <div class="card-arrow">›</div>
   </div>
 
   <!-- S02 용두동 2층 매물 -->
-  <div class="card" onclick="openDetail(1)">
+  <div class="card" data-scode="S02" onclick="openDetail(1)">
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S02/S02_01.jpg" alt="용두동 2층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -423,7 +423,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   </div>
 
   <!-- S03 용두동 5층 매물 -->
-  <div class="card" onclick="openDetail(2)">
+  <div class="card" data-scode="S03" onclick="openDetail(2)">
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S03/S03_01.jpg" alt="용두동 5층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -435,7 +435,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   </div>
 
   <!-- S04 용문동 3층 매물 -->
-  <div class="card" onclick="openDetail(3)">
+  <div class="card" data-scode="S04" onclick="openDetail(3)">
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S04/S04_01.jpg" alt="용문동 3층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">투룸</span>
@@ -514,6 +514,8 @@ function makePhotos(prefix, count, newStyle = false) {
 
 const listings = [
   {
+    sCode: "S01",
+    desc: "관리비 없음 · 쓰리룸 · 총 4층",
     tag: "쓰리룸",
     title: "대동 4층 매물",
     price: "보증금 2000만 / 월세 60만",
@@ -528,7 +530,7 @@ const listings = [
       { label: "생활시설", value: "냉장고, 옷장, 신발장, 싱크대, 가스레인지, 붙박이장, 현관보안" },
       { label: "보안", value: "현관보안, 인터폰" },
       { label: "기타", value: "베란다" },
-      { label: "관리비", value: "0만원" },
+      { label: "관리비", value: "없음" },
       { label: "입주", value: "즉시입주" },
     ],
     features: ["쓰리룸", "베란다", "가스레인지", "에어컨", "현관보안", "넓은 원룸"],
@@ -539,6 +541,8 @@ const listings = [
     photos: makePhotos("S01", 20, true)
   },
   {
+    sCode: "S02",
+    desc: "관리비 5만원 · 투룸 · 총 4층",
     tag: "투룸",
     title: "용두동 2층 매물",
     price: "보증금 2000만 / 월세 60만",
@@ -564,6 +568,8 @@ const listings = [
     photos: makePhotos("S02", 17, true)
   },
   {
+    sCode: "S03",
+    desc: "관리비 5.2만원 · 투룸 · 총 5층",
     tag: "투룸",
     title: "용두동 5층 매물",
     price: "보증금 1000만 / 월세 75만",
@@ -589,6 +595,8 @@ const listings = [
     photos: makePhotos("S03", 20, true)
   },
   {
+    sCode: "S04",
+    desc: "관리비 6만원 · 투룸 · 총 4층",
     tag: "투룸",
     title: "용문동 3층 매물",
     price: "보증금 2000만 / 월세 70만",
@@ -742,6 +750,26 @@ document.getElementById('lightbox').addEventListener('touchend', e => {
 // ESC로 라이트박스 닫기
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeLightbox();
+});
+
+// ── KV 실시간 편집 반영(2026-08-27 추가) ──
+// /edit/:code 로 수정하면 KV에는 바로 저장되지만, 이 정적 HTML의 listings[] 배열은
+// /share 당시 스냅샷이라 그 자체로는 안 바뀐다. 페이지 로드 시 각 매물의 최신 데이터를
+// KV에서 가져와 배열(상세보기용)과 카드 화면을 덮어써서, 재배포 없이 수정사항이 바로 보이게 한다.
+document.querySelectorAll('.card[data-scode]').forEach(card => {
+  const code = card.dataset.scode;
+  const d = listings.find(l => l.sCode === code);
+  if (!d) return;
+  fetch('/api/listing/' + code).then(r => r.ok ? r.json() : null).then(data => {
+    if (!data) return;
+    Object.assign(d, data);
+    const tagEl = card.querySelector('.card-tag');
+    const titleEl = card.querySelector('.card-title');
+    const descEl = card.querySelector('.card-desc');
+    if (tagEl) tagEl.textContent = d.tag;
+    if (titleEl) titleEl.textContent = d.title;
+    if (descEl) descEl.textContent = d.desc;
+  }).catch(() => {});
 });
 </script>
 </body>

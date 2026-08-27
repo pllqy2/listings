@@ -1,5 +1,11 @@
 name = "listings"
 compatibility_date = "2024-01-01"
+main = "worker.js"
 
 [assets]
 directory = "."
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "LISTING_DATA"
+id = "e5c5710849104e0aa9476c8e22bad94b"

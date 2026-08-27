@@ -1,4 +1,6 @@
 .git
 .github
+.wrangler
 wrangler.toml
+worker.js
 README.md
