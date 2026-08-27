@@ -763,12 +763,19 @@ document.querySelectorAll('.card[data-scode]').forEach(card => {
   fetch('/api/listing/' + code).then(r => r.ok ? r.json() : null).then(data => {
     if (!data) return;
     Object.assign(d, data);
+    // photos: KV엔 파일명만 저장되어 있음(용량 절약 + 편집폼 단순화) — 실제 사진 URL로 변환.
+    // 목록에서 뺀(삭제한) 파일은 여기서 사라지고, 드래그로 바꾼 순서 그대로 반영된다.
+    if (data.photos && data.photos.length) {
+      d.photos = data.photos.map(fn => `https://pllqy2.github.io/listings/${code}/${fn}`);
+    }
     const tagEl = card.querySelector('.card-tag');
     const titleEl = card.querySelector('.card-title');
     const descEl = card.querySelector('.card-desc');
+    const thumbEl = card.querySelector('.card-thumb');
     if (tagEl) tagEl.textContent = d.tag;
     if (titleEl) titleEl.textContent = d.title;
     if (descEl) descEl.textContent = d.desc;
+    if (thumbEl && d.photos && d.photos.length) thumbEl.src = d.photos[0];
   }).catch(() => {});
 });
 </script>
