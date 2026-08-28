@@ -443,19 +443,21 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   <div class="section-title">추천 매물 2건</div>
 
   <!-- S05 대동 4층 매물 -->
-  <div class="card" onclick="openDetail(0)">
+  <div class="card" data-scode="S05" onclick="openDetail(0)">
+    <a class="card-edit" href="/edit/S05" target="_blank" onclick="event.stopPropagation()" title="S05 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S05/S05_01.jpg" alt="대동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">쓰리룸</span>
       <div class="card-title">대동 4층 매물</div>
       <div class="card-price">보증금 2000 / 월 60만</div>
-      <div class="card-desc">관리비 0만원 · 쓰리룸 · 총 4층</div>
+      <div class="card-desc">관리비 없음 · 쓰리룸 · 총 4층</div>
     </div></div>
     <div class="card-arrow">›</div>
   </div>
 
   <!-- S06 유천동 4층 매물 -->
-  <div class="card" onclick="openDetail(1)">
+  <div class="card" data-scode="S06" onclick="openDetail(1)">
+    <a class="card-edit" href="/edit/S06" target="_blank" onclick="event.stopPropagation()" title="S06 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S06/S06_01.jpg" alt="유천동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">오픈형</span>
@@ -538,9 +540,11 @@ function makePhotos(prefix, count, newStyle = false) {
 
 const listings = [
   {
+    sCode: "S05",
     tag: "쓰리룸",
     title: "대동 4층 매물",
     price: "보증금 2000만 / 월세 60만",
+    desc: "관리비 없음 · 쓰리룸 · 총 4층",
     info: [
       { label: "건물명", value: "신동아빌라" },
       { label: "주소", value: "대전 동구 대동 354-1" },
@@ -552,7 +556,7 @@ const listings = [
       { label: "생활시설", value: "냉장고, 옷장, 신발장, 싱크대, 가스레인지, 붙박이장, 현관보안" },
       { label: "보안", value: "현관보안, 인터폰" },
       { label: "기타", value: "베란다" },
-      { label: "관리비", value: "0만원" },
+      { label: "관리비", value: "없음" },
       { label: "입주", value: "즉시입주" },
     ],
     features: ["쓰리룸", "베란다", "가스레인지", "에어컨", "현관보안", "넓은 원룸"],
@@ -563,9 +567,11 @@ const listings = [
     photos: makePhotos("S05", 20, true)
   },
   {
+    sCode: "S06",
     tag: "오픈형",
     title: "유천동 4층 매물",
     price: "보증금 3000만 / 월세 30만",
+    desc: "관리비 1.7만원 · 오픈형",
     info: [
       { label: "건물명", value: "5층원룸건물" },
       { label: "주소", value: "대전 유천동 200-2" },

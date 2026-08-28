@@ -443,7 +443,8 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   <div class="section-title">추천 매물 1건</div>
 
   <!-- S07 유천동 4층 매물 -->
-  <div class="card" onclick="openDetail(0)">
+  <div class="card" data-scode="S07" onclick="openDetail(0)">
+    <a class="card-edit" href="/edit/S07" target="_blank" onclick="event.stopPropagation()" title="S07 수정">✏️</a>
     <img class="card-thumb" src="https://listings.pllqy2.workers.dev/S07/S07_01.jpg" alt="유천동 4층 매물 썸네일" onerror="this.style.background='#ddd'">
     <div class="card-body"><div>
       <span class="card-tag">오픈형</span>
@@ -526,9 +527,11 @@ function makePhotos(prefix, count, newStyle = false) {
 
 const listings = [
   {
+    sCode: "S07",
     tag: "오픈형",
     title: "유천동 4층 매물",
     price: "보증금 3000만 / 월세 30만",
+    desc: "관리비 1.7만원 · 오픈형",
     info: [
       { label: "건물명", value: "5층원룸건물" },
       { label: "주소", value: "대전 유천동 200-2" },
