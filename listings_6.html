@@ -84,12 +84,12 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   gap: 0;
 }
 .card-edit {
+  display: none;
   position: absolute;
   top: 6px;
   right: 6px;
   width: 26px;
   height: 26px;
-  display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255,255,255,.9);
@@ -182,6 +182,7 @@ header .sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
   cursor: pointer;
 }
 .detail-edit-link {
+  display: none;
   font-size: 18px;
   text-decoration: none;
   padding: 4px;
@@ -680,6 +681,16 @@ document.getElementById('lightbox').addEventListener('touchend', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeLightbox();
 });
+
+// ── 수정 아이콘(연필) 노출 제어(2026-08-27 추가) ──
+// 일반 고객에게는 연필 아이콘이 안 보이게 기본 숨김 처리(CSS display:none) 해뒀고,
+// 이 기기가 /edit 페이지에서 비밀번호 인증을 이미 통과해 edit_key 쿠키를 갖고 있을 때만
+// 보여준다 — 사장님 본인 기기에서만 보이고 고객 화면에는 아예 안 나타남.
+if (document.cookie.includes('edit_key=')) {
+  document.querySelectorAll('.card-edit, .detail-edit-link').forEach(el => {
+    el.style.display = el.classList.contains('card-edit') ? 'flex' : 'inline-flex';
+  });
+}
 
 // ── KV 실시간 편집 반영(2026-08-27 추가) ──
 // /edit/:code 로 수정하면 KV에는 바로 저장되지만, 이 정적 HTML의 listings[] 배열은
