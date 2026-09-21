@@ -178,6 +178,16 @@ function renderEditPage(code, data, key) {
   body{font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;background:#f3f4f6;
        margin:0;padding:20px;color:#222}
   .wrap{max-width:520px;margin:0 auto}
+  /* 2026-09-21: PC에서는 사진 영역을 크게(왼쪽), 텍스트 폼은 오른쪽 열로 분리.
+     사진이 3열로 길게 늘어져서 옮기기 힘들다는 피드백 반영. 모바일은 기존 그대로. */
+  @media(min-width:1000px){
+    .wrap{max-width:1700px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:20px;align-items:start}
+    .photoGrid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important;gap:12px!important}
+    .photo .pnum{font-size:13px;padding:2px 8px}
+    .photo .pmove button{width:34px;height:28px;font-size:15px}
+    .photo .pdel{width:26px;height:26px;font-size:14px}
+  }
   h1{font-size:20px;margin:0 0 4px}
   .hint{color:#888;font-size:13px;margin-bottom:20px}
   .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
@@ -222,11 +232,15 @@ function renderEditPage(code, data, key) {
   <h1>${code} 매물 수정</h1>
   <div class="hint">저장하면 사이트에 바로 반영됩니다.</div>
 
+<div class="layout">
+  <div class="colPhotos">
   <div class="card">
     <label>사진 (드래그로 순서 변경 — PC·스마트폰 모두 가능, ✕로 목록에서 제외 — 실제 파일은 지워지지 않습니다)</label>
     <div class="photoGrid" id="photoGrid">${photoTiles}</div>
   </div>
+  </div>
 
+  <div class="colForm">
   <div class="card">
     <label>태그 (예: 투룸)</label>
     <input id="f_tag" value="${esc(data.tag)}">
@@ -256,6 +270,8 @@ function renderEditPage(code, data, key) {
     <label>담당자명</label>
     <input id="f_agent" value="${esc(data.agent)}">
   </div>
+  </div>
+</div>
 
   <button class="save" id="saveBtn" onclick="save()">저장</button>
   <div id="msg"></div>
